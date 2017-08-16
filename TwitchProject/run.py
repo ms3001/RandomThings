@@ -1,15 +1,18 @@
 import string, socket, time, datetime, numpy as np, requests, json
 			
+# Function used to parse twitch PRVMSG to return user name
 def getUser(line):
 	separate = line.split(":", 2)
 	user = separate[1].split("!", 1)[0]
 	return user
 
+# Function used to parse twitch PRVMSG to return message
 def getMessage(line):
 	separate = line.split(":", 2)
 	message = separate[2]
 	return message
 
+# Function used to create socket connection with twitch stream
 def openSocket(stream):
 	s = socket.socket()
 	s.connect(("irc.chat.twitch.tv", 6667))
@@ -17,12 +20,14 @@ def openSocket(stream):
 	s.send("NICK " + "msthreezero" + "\r\n")
 	s.send("JOIN #" + stream + "\r\n")
 	return s
-	
+
+# Function used to send message to twitch stream using given socket	
 def sendMessage(s, message, stream):
 	messageTemp = "PRIVMSG #" + stream + " :" + message
 	s.send(messageTemp + "\r\n")
 	print("Sent: " + messageTemp)
 
+# Function used to join given twitch stream with given socket
 def joinRoom(s, stream):
 	readbuffer = ""
 	Loading = True
@@ -35,13 +40,14 @@ def joinRoom(s, stream):
 			print(line)
 			Loading = loadingComplete(line)
 	sendMessage(s, "Successfully joined chat", stream)
-	
+
 def loadingComplete(line):
 	if("End of /NAMES list" in line):
 		return False
 	else:
 		return True
 
+# Function used to find when given stream was started
 def getStreamData(stream):
 	payload = {'Client-ID': 'kty4svj7yncksdfls55emyj9btqufe'}
 	print('Requesting stream data')
@@ -74,9 +80,9 @@ while True:
 
 		for line in temp:
 			#print(line)
-			if "PING" in line:
+			if "PING" in line: # Need to respond to twitch PONG messages
 				s.send(line.replace("PING", "PONG"))
-				print(line)
+				print("Sent PONG message")
 				break
 			user = getUser(line)
 			message = getMessage(line)
