@@ -59,7 +59,7 @@ def getStreamData(stream):
 	print('Stream has been live for: ' + str(time.time()+4*60*60-stream_start_time))
 	return time.time()+4*60*60-stream_start_time # stream_live_time
 
-stream = 'summit1g'
+stream = 'shroud'
 s = openSocket(stream)
 joinRoom(s, stream)
 stream_live_time = getStreamData(stream)
@@ -69,12 +69,12 @@ count = 0
 list_of_times = []
 
 while True:
-		readbuffer = readbuffer + s.recv(512)
+		readbuffer = readbuffer + s.recv(1024)
 		temp = string.split(readbuffer, "\n")
 		readbuffer = temp.pop()
 		if len(temp) == 0: # We sometimes get kicked out of room.
-			s = openSocket()
-			joinRoom(s)
+			s = openSocket(stream)
+			joinRoom(s, stream)
 			print('Rejoined room')
 			
 
@@ -87,9 +87,10 @@ while True:
 			user = getUser(line)
 			message = getMessage(line)
 			#print user + " typed :" + message
+
+			list_of_times.append(time.time() - start_time + stream_live_time)
 			print time.time() - start_time + stream_live_time
-			list_of_times.append(time.time() - start_time)
-			
+
 			if (len(list_of_times) == 1000):
 			 	out = np.asarray(list_of_times)
 			 	list_of_times = []
